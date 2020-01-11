@@ -98,11 +98,6 @@ var masterSetCmd = &cobra.Command{
 		if err != nil {
 			return fmt.Errorf("Error sending call: %s", err)
 		}
-		var e master.Response
-		err = resp.Decode(&e)
-		if err != nil {
-			return fmt.Errorf("Error decoding response: %s", err)
-		}
 		return nil
 	},
 }

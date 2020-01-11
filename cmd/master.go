@@ -21,7 +21,7 @@ import (
 
 	"github.com/mesos/mesos-go/api/v1/lib/httpcli"
 	"github.com/mesos/mesos-go/api/v1/lib/httpcli/httpmaster"
-	mesosMaster "github.com/mesos/mesos-go/api/v1/lib/master"
+	"github.com/mesos/mesos-go/api/v1/lib/master"
 	"github.com/mesos/mesos-go/api/v1/lib/master/calls"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -62,24 +62,32 @@ func presetRequiredFlags() {
 }
 
 type MasterCallDef struct {
-	call  func() *mesosMaster.Call
+	call  func() *master.Call
 	desc  string
-	json  func(r *mesosMaster.Response) ([]byte, error)
-	print func(r *mesosMaster.Response) error
+	json  func(r *master.Response) ([]byte, error)
+	print func(r *master.Response) error
 }
 
 type MasterCallsDef map[string]MasterCallDef
 
 func (m MasterCallsDef) describeCalls() string {
-	desc := "Possible call values:\n"
+	padding := 0
+	for key := range m {
+		if len(key) > padding {
+			padding = len(key)
+		}
+	}
+	template := fmt.Sprintf("  %%-%ds %%s\n", padding)
+	desc := ""
 	if _, ok := m[""]; ok {
 		desc += fmt.Sprintf("If no call specified: %s\n", m[""].desc)
 		desc += "\n"
 	}
+
+	desc += "Possible call values:\n"
 	for key := range m {
 		if key != "" {
-			desc += fmt.Sprintf("- %s\n", key)
-			desc += fmt.Sprintf("  %s\n", m[key].desc)
+			desc += fmt.Sprintf(template, key, m[key].desc)
 		}
 	}
 

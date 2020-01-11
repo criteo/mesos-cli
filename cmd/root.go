@@ -17,8 +17,10 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/spf13/cobra"
 	"os"
+	"strings"
+
+	"github.com/spf13/cobra"
 
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
@@ -33,14 +35,20 @@ var rootCmd = &cobra.Command{
 	Short: "A simple Mesos CLI",
 	Long: `mesos-cli is a command line interface (CLI) that can be used
 to interact with Apache Mesos clusters`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	//	Run: func(cmd *cobra.Command, args []string) { },
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
+	// Special case for agent command
+	args := os.Args[1:]
+	for index, v := range args {
+		if v == "agent" && len(args) > index+1 && !strings.HasPrefix(args[index+1], "-") {
+			agentOpts.name = args[index+1]
+			os.Args = append(os.Args[0:index+2], os.Args[index+3:]...)
+		}
+	}
+
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -53,9 +61,9 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.mesos-cli.yaml)")
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "verbose output")
 
-	rootCmd.PersistentFlags().StringP("principal", "p", "", "Mesos Principal")
+	rootCmd.PersistentFlags().String("principal", "", "Mesos Principal")
 	viper.BindPFlag("principal", rootCmd.PersistentFlags().Lookup("principal"))
-	rootCmd.PersistentFlags().StringP("secret", "s", "", "Mesos Secret")
+	rootCmd.PersistentFlags().String("secret", "", "Mesos Secret")
 	viper.BindPFlag("secret", rootCmd.PersistentFlags().Lookup("secret"))
 }
 

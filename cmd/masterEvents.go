@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"io"
 
-	mesos "github.com/mesos/mesos-go/api/v1/lib"
 	"github.com/mesos/mesos-go/api/v1/lib/master/calls"
 
 	"github.com/mesos/mesos-go/api/v1/lib/master"
@@ -47,31 +46,38 @@ var masterEventsCmd = &cobra.Command{
 		}()
 		for err == nil {
 			var e master.Event
-			if err := resp.Decode(&e); err != nil {
+			if err = resp.Decode(&e); err != nil {
 				if err == io.EOF {
 					err = nil
-					break
 				}
-				fmt.Println("Error", err)
-				continue
+				break
 			}
 			switch t := e.GetType(); t {
+			case master.Event_SUBSCRIBED,
+				master.Event_HEARTBEAT:
+				fmt.Println(t.String())
 			case master.Event_TASK_ADDED:
 				task := e.GetTaskAdded().Task
-				fmt.Println(t.String(), task.GetFrameworkID(), task.GetTaskID(), task.GetState(), task.GetLabels().Format(), mesos.Resources(task.GetResources()))
+				fmt.Printf("%s: framework %s task %s %s %s\n", t.String(), task.GetFrameworkID().Value, task.GetTaskID().Value, task.GetState(), task.GetLabels().Format())
 			case master.Event_TASK_UPDATED:
-				task := e.GetTaskUpdated().GetStatus()
-				fmt.Println(t.String(), task.GetTaskID(), task.GetState(), task.GetLabels().Format())
+				tu := e.GetTaskUpdated()
+				task := tu.GetStatus()
+				fmt.Printf("%s: framework %s task %s %s %s\n", t.String(), tu.GetFrameworkID().Value, task.GetTaskID().Value, task.GetState(), task.GetLabels().Format())
 			case master.Event_AGENT_ADDED:
-				fmt.Println(t.String(), e.GetAgentAdded().String())
+				a := e.GetAgentAdded().GetAgent()
+				fmt.Println(t.String(), a.GetAgentInfo().ID, a.GetAgentInfo().Hostname, a.GetAgentInfo().Attributes)
 			case master.Event_AGENT_REMOVED:
-				fmt.Println(t.String(), e.GetAgentRemoved().String())
+				a := e.GetAgentRemoved()
+				fmt.Println(t.String(), a.GetAgentID())
 			case master.Event_FRAMEWORK_ADDED:
-				fmt.Println(t.String(), e.GetFrameworkAdded().String())
+				fw := e.GetFrameworkAdded().GetFramework()
+				fmt.Println(t.String(), fw.GetFrameworkInfo().ID, fw.GetFrameworkInfo().Name, fw.GetFrameworkInfo().Role)
 			case master.Event_FRAMEWORK_UPDATED:
-				fmt.Println(t.String(), e.GetFrameworkUpdated().String())
+				fw := e.GetFrameworkUpdated().GetFramework()
+				fmt.Println(t.String(), fw.GetFrameworkInfo().ID, fw.GetFrameworkInfo().Name, fw.GetFrameworkInfo().Role)
 			case master.Event_FRAMEWORK_REMOVED:
-				fmt.Println(t.String(), e.GetFrameworkRemoved().String())
+				fw := e.GetFrameworkRemoved()
+				fmt.Println(t.String(), fw.GetFrameworkInfo().ID, fw.GetFrameworkInfo().Name, fw.GetFrameworkInfo().Role)
 			default:
 				fmt.Println(t.String(), e)
 			}
