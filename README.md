@@ -35,13 +35,11 @@ State of tasks:
   a5e9c8ba-8268-4cfb-95ae-e0c6d786fc71-0000  bi-dtest-0-d884980c-9965-4be3-9813-e48cc81e6295                       completed  TASK_FAILED     
   a5e9c8ba-8268-4cfb-95ae-e0c6d786fc71-0000  foo-bar-bazr-0-f8fc00da-69e9-402d-b865-4aa631f16059                   completed  TASK_FINISHED  
   a5e9c8ba-8268-4cfb-95ae-e0c6d786fc71-0000  foo-bar-bazr-uploader-0-12efca64-7157-4459-90eb-f07c11ad5f9f          completed  TASK_FINISHED  
-  []...]
+  [...]
 ```
 
 Features
 -----
-
-Still early version
 
 - [x] Master API
   - [x] Get information (version, frameworks, tasks, state, operations...etc)
@@ -59,7 +57,7 @@ Still early version
 - [x] Agent API
   - [x] Get information (version, frameworks, tasks, containers...etc)
   - [x] Launch nested containers (with and without interactive/TTY)
-  - [x] Launch detached nested or standalone containers
+  - [ ] Launch detached nested or standalone containers
   - [ ] Wait/Kill/Remove container
   - [x] List/Read files
   - [x] Get/Set logging level
@@ -79,6 +77,7 @@ Usage:
   mesos-cli [command]
 
 Available Commands:
+  agent      Interact with Mesos Agent
   help        Help about any command
   master      Interact with Mesos Master
 
